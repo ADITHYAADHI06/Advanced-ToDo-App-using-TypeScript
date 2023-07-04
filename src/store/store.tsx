@@ -1,5 +1,5 @@
 "use client"
-import { ReactNode, createContext, useContext, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useState } from "react";
 
 export type Todo = {
     id: string;
@@ -20,20 +20,31 @@ export const todosContext = createContext<TodoConext | null>(null);
 
 export const TodosProvider = ({ children }: { children: ReactNode }) => {
 
-    const [todos, Settodos] = useState<Todo[]>([])
+
+    const [todos, Settodos] = useState<Todo[]>(() => {
+        let newtodos = localStorage.getItem("todos") || "[]";
+        return JSON.parse(newtodos) as Todo[];
+    })
 
     const handleAddToDo = (task: string) => {
 
         Settodos((prev) => {
 
-            const newTodo: Todo[] = [{
-                id: Math.random().toString(),
-                task: task,
-                completed: false,
-                createdAt: new Date(),
-            }, ...prev];
+            const newTodo: Todo[] =
+                [
+                    {
+                        id: Math.random().toString(),
+                        task: task,
+                        completed: false,
+                        createdAt: new Date(),
+                    },
+                    ...prev
+                ];
+
+
             return newTodo;
         });
+
     }
 
 
@@ -65,6 +76,7 @@ export const TodosProvider = ({ children }: { children: ReactNode }) => {
         })
     }
 
+    useEffect(() => { localStorage.setItem("todos", JSON.stringify(todos)); }, [todos])
     return (
         <todosContext.Provider value={{ todos, handleAddToDo, handleToDoCompleted, handleToDoDelete }}>
             {children}
